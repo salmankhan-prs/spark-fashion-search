@@ -1,8 +1,5 @@
-const API_BASE = "http://localhost:8080/api/v1"
+const API_BASE = import.meta.env.VITE_API_BASE;
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TYPES
-// ═══════════════════════════════════════════════════════════════════════════
 
 export interface Merchant {
   id: string
@@ -64,9 +61,6 @@ export interface SearchParams {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MERCHANT API
-// ═══════════════════════════════════════════════════════════════════════════
 
 /**
  * Fetch all merchants from the API
@@ -82,9 +76,6 @@ export async function fetchMerchants(): Promise<Merchant[]> {
   return data.responseObject.merchants
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SEARCH API
-// ═══════════════════════════════════════════════════════════════════════════
 
 export async function searchProducts(params: SearchParams): Promise<SearchResponse> {
   if (!params.merchantId) {

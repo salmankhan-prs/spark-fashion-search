@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ShoppingBag, Search, TrendingUp, Zap, Loader2, AlertCircle, ExternalLink, Sparkles } from "lucide-react"
+import { ShoppingBag, TrendingUp, Loader2, AlertCircle, ExternalLink, Sparkles } from "lucide-react"
 import { useMerchant } from "@/context/MerchantContext"
 
 const API_BASE = "http://localhost:8080/api/v1"
