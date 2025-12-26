@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ShoppingBag, TrendingUp, Loader2, AlertCircle, ExternalLink, Sparkles } from "lucide-react"
 import { useMerchant } from "@/context/MerchantContext"
 
-const API_BASE = "http://localhost:8080/api/v1"
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 interface DashboardStats {
   totalProducts: number
