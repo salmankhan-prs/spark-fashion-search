@@ -2,7 +2,7 @@
 
 A proof-of-concept demonstrating **AI semantic search as a service** for e-commerce platforms.
 
-**🔗 Live Demo:** https://spark-fashion-search.vercel.app/store
+**🔗 Live Demo:** https://spark-fashion-search.vercel.app
 
 ## What is this?
 
