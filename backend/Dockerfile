@@ -51,8 +51,7 @@ COPY --from=deps --chown=spark:spark /app/node_modules ./node_modules
 COPY --from=build --chown=spark:spark /app/dist ./dist
 COPY --from=build --chown=spark:spark /app/package.json ./
 
-# Optional: drizzle migrations (safe even if missing)
-COPY --from=build --chown=spark:spark /app/drizzle ./drizzle || true
+
 
 USER spark
 
