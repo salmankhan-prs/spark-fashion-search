@@ -1,14 +1,18 @@
 # syntax=docker/dockerfile:1
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Stage 1: Install dependencies
+# Stage 1: Dependencies
 # ══════════════════════════════════════════════════════════════════════════════
 FROM oven/bun:1.1.38-alpine AS deps
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile --production
+# Copy package files
+COPY package.json ./
+COPY bun.lockb* ./
+
+# Install production dependencies
+RUN bun install --production
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Stage 2: Build
@@ -17,37 +21,41 @@ FROM oven/bun:1.1.38-alpine AS build
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+COPY package.json ./
+COPY bun.lockb* ./
 
+# Install all deps (including dev)
+RUN bun install
+
+# Copy source
 COPY . .
+
+# Build (adjust entry if needed)
 RUN bun build src/index.ts --outdir=dist --target=bun
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Stage 3: Production
+# Stage 3: Production Runtime
 # ══════════════════════════════════════════════════════════════════════════════
 FROM oven/bun:1.1.38-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=8080
 
-# Create non-root user for security
-RUN addgroup --system --gid 1001 spark && \
-    adduser --system --uid 1001 spark
+# Non-root user (Fly best practice)
+RUN addgroup -S spark && adduser -S spark -G spark
 
-# Copy production dependencies and built files
+# Copy runtime files only
 COPY --from=deps --chown=spark:spark /app/node_modules ./node_modules
 COPY --from=build --chown=spark:spark /app/dist ./dist
 COPY --from=build --chown=spark:spark /app/package.json ./
 
-# Copy drizzle migrations if needed
-COPY --from=build --chown=spark:spark /app/drizzle ./drizzle
+# Optional: drizzle migrations (safe even if missing)
+COPY --from=build --chown=spark:spark /app/drizzle ./drizzle || true
 
 USER spark
 
-# Fly.io uses PORT env variable
-ENV PORT=8080
 EXPOSE 8080
 
-CMD ["bun", "run", "dist/index.js"]
+CMD ["bun", "dist/index.js"]
