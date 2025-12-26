@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Stage 1: Dependencies (production)
+# Stage 1: Production Dependencies
 # ══════════════════════════════════════════════════════════════════════════════
 FROM oven/bun:1.1.38-alpine AS deps
 
@@ -34,7 +34,7 @@ COPY . .
 RUN bun build src/index.ts --outdir=dist --target=bun
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Stage 3: Production Runtime
+# Stage 3: Runtime
 # ══════════════════════════════════════════════════════════════════════════════
 FROM oven/bun:1.1.38-alpine AS runner
 
@@ -43,10 +43,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
 
-# Non-root user (Fly best practice)
+# Create non-root user (Fly best practice)
 RUN addgroup -S spark && adduser -S spark -G spark
 
-# Copy runtime files only
 COPY --from=deps --chown=spark:spark /app/node_modules ./node_modules
 COPY --from=build --chown=spark:spark /app/dist ./dist
 COPY --from=build --chown=spark:spark /app/package.json ./

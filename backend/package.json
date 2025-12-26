@@ -6,7 +6,7 @@
 	"main": "index.ts",
 	"private": true,
 	"scripts": {
-		"prepare": "husky install",
+		"prepare": "husky install || true",
 		"build": "bun build src/index.ts --outdir=dist --target=bun",
 		"start:dev": "bun src/index.ts --watch | pino-pretty",
 		"start:prod": "bun dist/index.js",
