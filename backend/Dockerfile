@@ -1,17 +1,18 @@
 # syntax=docker/dockerfile:1
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Stage 1: Dependencies
+# Stage 1: Dependencies (production)
 # ══════════════════════════════════════════════════════════════════════════════
 FROM oven/bun:1.1.38-alpine AS deps
 
 WORKDIR /app
 
-# Copy package files
+ENV NODE_ENV=production
+ENV HUSKY=0
+
 COPY package.json ./
 COPY bun.lockb* ./
 
-# Install production dependencies
 RUN bun install --production
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -21,16 +22,15 @@ FROM oven/bun:1.1.38-alpine AS build
 
 WORKDIR /app
 
+ENV HUSKY=0
+
 COPY package.json ./
 COPY bun.lockb* ./
 
-# Install all deps (including dev)
 RUN bun install
 
-# Copy source
 COPY . .
 
-# Build (adjust entry if needed)
 RUN bun build src/index.ts --outdir=dist --target=bun
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -50,8 +50,6 @@ RUN addgroup -S spark && adduser -S spark -G spark
 COPY --from=deps --chown=spark:spark /app/node_modules ./node_modules
 COPY --from=build --chown=spark:spark /app/dist ./dist
 COPY --from=build --chown=spark:spark /app/package.json ./
-
-
 
 USER spark
 
