@@ -8,12 +8,11 @@ FROM oven/bun:1.1.38-alpine AS deps
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV HUSKY=0
 
 COPY package.json ./
 COPY bun.lockb* ./
 
-RUN bun install --production
+RUN bun install --production --ignore-scripts
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Stage 2: Build
@@ -21,8 +20,6 @@ RUN bun install --production
 FROM oven/bun:1.1.38-alpine AS build
 
 WORKDIR /app
-
-ENV HUSKY=0
 
 COPY package.json ./
 COPY bun.lockb* ./
@@ -43,7 +40,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
 
-# Create non-root user (Fly best practice)
+# Non-root user (Fly best practice)
 RUN addgroup -S spark && adduser -S spark -G spark
 
 COPY --from=deps --chown=spark:spark /app/node_modules ./node_modules
