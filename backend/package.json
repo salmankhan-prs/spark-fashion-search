@@ -1,8 +1,8 @@
 {
-	"name": "TimeSheet Management",
+	"name": "Spark - Fashion Search Engine",
 	"version": "1.0.0",
-	"description": "TimeSheet Management - Backend",
-	"author": "Highbrow",
+	"description": "Spark - Fashion Search Engine - Backend",
+	"author": "Salman khan",
 	"main": "index.ts",
 	"private": true,
 	"scripts": {
@@ -10,8 +10,6 @@
 		"build": "bun build src/index.ts --outdir=dist --target=bun",
 		"start:dev": "bun src/index.ts --watch | pino-pretty",
 		"start:prod": "bun dist/index.js",
-		"worker:dev": "bun watch src/workers/index.ts",
-		"worker:prod": "bun dist/workers/index.js",
 		"check": "biome check --write",
 		"test": "vitest run",
 		"test:cov": "vitest run --coverage",

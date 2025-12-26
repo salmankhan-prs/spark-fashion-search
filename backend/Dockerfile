@@ -1,38 +1,53 @@
-# Stage 1: Build the Application
-# We use node:22 as the base for building and installing dependencies.
-FROM node:22 AS build
+# syntax=docker/dockerfile:1
 
-# Set the working directory inside the container
-WORKDIR /usr/src/app
+# ══════════════════════════════════════════════════════════════════════════════
+# Stage 1: Install dependencies
+# ══════════════════════════════════════════════════════════════════════════════
+FROM oven/bun:1.1.38-alpine AS deps
 
-# Copy package.json and package-lock.json first to leverage Docker caching.
-# If these files don't change, subsequent builds can skip 'npm install'.
-COPY package*.json ./
+WORKDIR /app
 
-# Install dependencies
-RUN npm install
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile --production
 
-# Copy the rest of the application source code
+# ══════════════════════════════════════════════════════════════════════════════
+# Stage 2: Build
+# ══════════════════════════════════════════════════════════════════════════════
+FROM oven/bun:1.1.38-alpine AS build
+
+WORKDIR /app
+
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+
 COPY . .
+RUN bun build src/index.ts --outdir=dist --target=bun
 
-# Stage 2: Create the Final Production Image
-# We use node:22 as the runtime image with all the necessary tools.
-FROM node:22
+# ══════════════════════════════════════════════════════════════════════════════
+# Stage 3: Production
+# ══════════════════════════════════════════════════════════════════════════════
+FROM oven/bun:1.1.38-alpine AS runner
 
-# Set the working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy the node_modules and built application files from the 'build' stage
-COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/package*.json ./
-COPY --from=build /usr/src/app .
+ENV NODE_ENV=production
 
-# Expose the port your app runs on
+# Create non-root user for security
+RUN addgroup --system --gid 1001 spark && \
+    adduser --system --uid 1001 spark
+
+# Copy production dependencies and built files
+COPY --from=deps --chown=spark:spark /app/node_modules ./node_modules
+COPY --from=build --chown=spark:spark /app/dist ./dist
+COPY --from=build --chown=spark:spark /app/package.json ./
+
+# Copy drizzle migrations if needed
+COPY --from=build --chown=spark:spark /app/drizzle ./drizzle
+
+USER spark
+
+# Fly.io uses PORT env variable
 ENV PORT=8080
-EXPOSE $PORT
+EXPOSE 8080
 
-# Run the application using the non-root user (recommended for security)
-USER node
-
-# Define the command to start your application
-CMD [ "node", "index.js" ]
+CMD ["bun", "run", "dist/index.js"]
